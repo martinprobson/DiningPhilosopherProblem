@@ -1,3 +1,5 @@
+package net.martinprobson.diningphilosopher.resourcehierarchy
+
 class Fork(
   val number: Int,
   private var available: Boolean,
@@ -9,13 +11,17 @@ class Fork(
   def inUse: Boolean = !available
 
   def pickUp(philosopher: Philosopher): Unit = {
-    heldBy = Some(philosopher)
-    available = false
+    this.synchronized {
+      heldBy = Some(philosopher)
+      available = false
+    }
   }
 
   def putDown(): Unit = {
-    heldBy = None
-    available = true
+    this.synchronized {
+      heldBy = None
+      available = true
+    }
   }
 
   override def toString: String = {

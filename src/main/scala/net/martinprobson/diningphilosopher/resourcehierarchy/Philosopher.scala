@@ -1,22 +1,27 @@
-import Philosopher.sleep
+package net.martinprobson.diningphilosopher.resourcehierarchy
 
-import java.util.concurrent.Executors
+import com.typesafe.scalalogging.{LazyLogging, Logger}
+import net.martinprobson.diningphilosopher.resourcehierarchy.Philosopher.sleep
+
+import java.util.concurrent.{Executors, ThreadFactory}
 import scala.annotation.tailrec
-import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.duration.{Duration, DurationDouble, DurationInt, MINUTES, SECONDS}
 
 class Philosopher(
   val name: String,
   private var state: String,
   private val leftFork: Fork,
   private val rightFork: Fork
-) extends Runnable {
+) extends Runnable with LazyLogging {
 
-  private val EATING_TIME                   = 2.seconds
-  private val THINKING_TIME                 = 2.seconds
+  private val log = Logger[Philosopher]
+  private val EATING_TIME                   = 100.millis
+  private val THINKING_TIME                 = 100.millis
   private def setState(state: String): Unit = this.state = state
+  def getState: String                      = state
 
   def eating(): Unit = {
-    println(s"Philosopher $name is eating.")
+    log.info(s"$name is eating.")
     setState("Eating")
   }
   def thinking(): Unit = setState("Thinking")
@@ -35,9 +40,9 @@ class Philosopher(
     val (fork1, fork2) =
       if (leftFork.number < rightFork.number) (leftFork, rightFork)
       else (rightFork, leftFork)
-    while (fork1.inUse) sleep(1.seconds)
+    while (fork1.inUse) sleep(100.millis)
     fork1.pickUp(this)
-    while (fork2.inUse) sleep(1.seconds)
+    while (fork2.inUse) sleep(100.millis)
     fork2.pickUp(this)
     eating()
     sleep(EATING_TIME)
@@ -57,20 +62,10 @@ object Philosopher extends App {
   private def sleep(duration: Duration): Unit =
     Thread.sleep(duration.toMillis)
 
-  val fork = Vector(
-    Fork(1),
-    Fork(2),
-    Fork(3),
-    Fork(4),
-    Fork(5)
-  )
-  val philosopher = List(
-    Philosopher("Philosopher-1", fork(0), fork(4)),
-    Philosopher("Philosopher-2", fork(1), fork(0)),
-    Philosopher("Philosopher-3", fork(2), fork(1)),
-    Philosopher("Philosopher-4", fork(3), fork(2)),
-    Philosopher("Philosopher-5", fork(4), fork(3))
-  )
+  val forks = (1 to 5).toVector.map{ i => Fork(i)}
+  val philosophers = List("Descartes","Nietzsche","Kant","Hume","Plato").zipWithIndex.map{ case (name,i) =>
+    Philosopher(name,forks(i),forks((i+1) % 4))
+  }
   val pool = Executors.newFixedThreadPool(5)
-  philosopher.foreach(pool.submit(_))
+  philosophers.foreach(pool.submit(_))
 }
