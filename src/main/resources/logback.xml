@@ -32,12 +32,14 @@
     </appender>
 
     <root level="WARN">
-        <appender-ref ref="FILE-ROLLING"/>
-        <appender-ref ref="STDOUT"/>
+<!--        <appender-ref ref="FILE-ROLLING"/>
+        <appender-ref ref="STDOUT"/> -->
+        <appender-ref ref="ASYNC" />
     </root>
     <logger name="net.martinprobson.diningphilosopher" level="info" additivity="false">
-        <appender-ref ref="FILE-ROLLING"/>
-        <appender-ref ref="STDOUT"/>
+        <!--        <appender-ref ref="FILE-ROLLING"/>
+                <appender-ref ref="STDOUT"/> -->
+        <appender-ref ref="ASYNC" />
     </logger>
 
 </configuration>
